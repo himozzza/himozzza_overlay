@@ -58,7 +58,7 @@ func parcingPackageName(gitLink, gitName string) string {
 		log.Fatal(err)
 	}
 	re := regexp.MustCompile(`/[\w\d-.+]*.tar.gz`)
-	matched := re.FindString(string(body)) // Пакета tar.gz с последней версией.
+	matched := re.FindString(string(body)) // Получение названия пакета tar.gz с последней версией.
 	re, err = regexp.Compile(`[\d]+\.[\d.]+`)
 	if err != nil {
 		fmt.Println("Не удалость получить версию пакета.", err)
