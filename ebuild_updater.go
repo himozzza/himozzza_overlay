@@ -13,12 +13,14 @@ import (
 
 func main() {
 	gitLinks := map[string]string{
-		"/usr/local/portage/himozzza_overlay/sys-kernel/zen-sources": "https://github.com/zen-kernel/zen-kernel/releases",
+		"/usr/local/portage/himozzza_overlay/sys-kernel/zen-sources": "https://github.com/zen-kernel/zen-kernel/tags",
 	}
 
 	for n, i := range gitLinks {
-		gitLink := i
-		gitUpdate := parcingPackageName(gitLink)
+		re := regexp.MustCompile("/[a-zA-Z0-9-_.+]*/tags")
+		gitName := strings.SplitN(re.FindString(i), "/", -1)[1] // Имя запрашиваемого репозитория.
+
+		gitUpdate := parcingPackageName(i, gitName)
 		os.Chdir(n)
 		files, _ := os.ReadDir(n)
 		for _, i := range files {
@@ -27,10 +29,8 @@ func main() {
 			} else if strings.Compare(i.Name(), "files") == 0 {
 				continue
 			}
-			re := regexp.MustCompile("(.*)-[0-9]")
-			preName := strings.TrimRight(re.FindString(i.Name()), "1234567890")
 
-			newName := fmt.Sprintf("%s%s.ebuild", preName, gitUpdate)
+			newName := fmt.Sprintf("%s-%s.ebuild", gitName, gitUpdate)
 
 			if strings.Compare(i.Name(), newName) == 0 {
 				fmt.Println("Ebuild уже имеет последнюю версию.")
@@ -45,8 +45,8 @@ func main() {
 	}
 }
 
-func parcingPackageName(gitLink string) string {
-	fmt.Printf("Получаем информацию о версии zen-sources на github...\n")
+func parcingPackageName(gitLink, gitName string) string {
+	fmt.Printf("Получаем информацию о версии %s на GitHub...\n", gitName)
 	resp, err := http.Get(gitLink)
 	if err != nil {
 		log.Fatal(err)
@@ -57,10 +57,14 @@ func parcingPackageName(gitLink string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	re := regexp.MustCompile("[0-9.](.*).tar.gz")
+	re := regexp.MustCompile("/[a-zA-Z0-9-.+]*.tar.gz")
 	matched := re.FindString(string(body))
-	matched = strings.SplitN(matched, "-", -1)[0]
+	re, err = regexp.Compile(`[\d]*\.[\d\.]+`)
+	if err != nil {
+		fmt.Println("Не удалость получить версию пакета.", err)
+		os.Exit(0)
+	}
+	matched = strings.TrimRight(re.FindString(matched), ".")
 	fmt.Println(matched)
 
 	return matched
