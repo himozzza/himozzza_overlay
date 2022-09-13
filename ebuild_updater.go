@@ -17,10 +17,10 @@ func main() {
 	}
 
 	for n, i := range gitLinks {
-		re := regexp.MustCompile("/[a-zA-Z0-9-_.+]*/tags")
-		gitName := strings.SplitN(re.FindString(i), "/", -1)[1] // Имя запрашиваемого репозитория.
+		re := regexp.MustCompile(`[\w\d-_]+$`)
+		gitName := re.FindString(n) // Имя запрашиваемого репозитория.
 
-		gitUpdate := parcingPackageName(i, gitName)
+		gitVersion := parcingPackageName(i, gitName)
 		os.Chdir(n)
 		files, _ := os.ReadDir(n)
 		for _, i := range files {
@@ -30,7 +30,7 @@ func main() {
 				continue
 			}
 
-			newName := fmt.Sprintf("%s-%s.ebuild", gitName, gitUpdate)
+			newName := fmt.Sprintf("%s-%s.ebuild", gitName, gitVersion)
 
 			if strings.Compare(i.Name(), newName) == 0 {
 				fmt.Println("Ebuild уже имеет последнюю версию.")
@@ -57,14 +57,15 @@ func parcingPackageName(gitLink, gitName string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	re := regexp.MustCompile("/[a-zA-Z0-9-.+]*.tar.gz")
-	matched := re.FindString(string(body))
-	re, err = regexp.Compile(`[\d]*\.[\d\.]+`)
+	re := regexp.MustCompile(`/[\w\d-.+]*.tar.gz`)
+	matched := re.FindString(string(body)) // Пакета tar.gz с последней версией.
+	re, err = regexp.Compile(`[\d]+\.[\d.]+`)
 	if err != nil {
 		fmt.Println("Не удалость получить версию пакета.", err)
 		os.Exit(0)
 	}
-	matched = strings.TrimRight(re.FindString(matched), ".")
+
+	matched = strings.TrimRight(re.FindString(matched), ".") // Форматирование строки версией tar.gz для приведения к виду "5.19.8".
 	fmt.Println(matched)
 
 	return matched
