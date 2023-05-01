@@ -27,8 +27,8 @@ KEYWORDS="~amd64"
 BDEPEND="app-arch/cabextract"
 
 PATCHES=(
-	"${FILESDIR}/${PN}-fix-6.3.patch"
 	"${FILESDIR}/${PN}-highest-power-channel.patch"
+	"${FILESDIR}/${PN}-fix-6.3.patch"
 )
 
 pkg_setup() {
