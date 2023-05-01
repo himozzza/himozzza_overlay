@@ -28,6 +28,7 @@ BDEPEND="app-arch/cabextract"
 
 PATCHES=(
 	"${FILESDIR}/${PN}-fix-6.3.patch"
+	"${FILESDIR}/${PN}-highest-power-channel.patch"
 )
 
 pkg_setup() {
@@ -71,6 +72,7 @@ src_unpack() {
 
 src_prepare() {
 	eapply "${FILESDIR}/${PN}-fix-6.3.patch"
+	eapply "${FILESDIR}/${PN}-highest-power-channel.patch"
 	cp "${FILESDIR}/Makefile" "${S}" || die
 	eapply_user
 }
